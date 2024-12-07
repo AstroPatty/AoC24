@@ -1,6 +1,11 @@
+*
+!*/
+!*.*
 dist
+.DS_Store
 dist-*
 cabal-dev
+*.txt
 *.o
 *.hi
 *.hie
