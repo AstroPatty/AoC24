@@ -1,6 +1,5 @@
 module Antenna (
     Antenna,
-    inLineAntinodes,
     getAntiNodes,
     parseLine,
     parseLines,
