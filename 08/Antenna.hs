@@ -48,17 +48,3 @@ getAntiNodes f [] = []
 getAntiNodes f (ant:rest) =
     concat (map (f ant) rest) ++ getAntiNodes f rest
 
-inLineAntinodes :: Index -> Antenna -> Antenna -> [Index]
-inLineAntinodes size a1 a2
-    | freq a1 /= freq a2 = []
-    | otherwise = idx2 : getPoints size (^+ diff) idx2 ++ getPoints size (^- diff) idx2 where
-    idx2 = loc a2
-    diff = reduce (idx2 ^- loc a1)
-
-getPoints :: Index -> (Index -> Index) -> Index -> [Index]
-getPoints size f idx
-    | inGrid size newIdx = newIdx : getPoints size f newIdx
-    | otherwise = [] where
-    newIdx = f idx
-
-
