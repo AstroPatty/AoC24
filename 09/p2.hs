@@ -8,6 +8,8 @@ main = do
     handle <- openFile "input.txt" ReadMode
     contents <- hGetContents handle
     let disk = readDisk 0 (init contents)
-    let score = getScore disk
-    print score
-    print "done"
+    let fi = getFileIndex disk 0 
+    let rev = reverse fi
+    let nd = reorgFiles fi
+    print $ getMapScore nd
+
