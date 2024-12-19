@@ -13,9 +13,6 @@ type Combos = Set.Set String
 type PatternCounts = Map.Map String Int
 type PatternMap = Map.Map String Combos
 
-
-
-
 checkPattern :: Towels -> String -> Bool
 checkPattern _ "" = True
 checkPattern towels pattern = isMatch where
