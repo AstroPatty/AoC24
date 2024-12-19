@@ -14,8 +14,7 @@ type PatternCounts = Map.Map String Int
 type PatternMap = Map.Map String Combos
 
 
-makePatternCounts :: Towels -> PatternCounts
-makePatternCounts towels = foldr (\s -> Map.insert s 1) Map.empty towels
+
 
 checkPattern :: Towels -> String -> Bool
 checkPattern _ "" = True
@@ -23,6 +22,9 @@ checkPattern towels pattern = isMatch where
     heads = filter (\s -> elem s towels) (inits pattern)
     rems = map (\h -> drop (length h) pattern) heads
     isMatch = if null heads then False else any (checkPattern towels) rems 
+
+countValid :: Towels -> [String] -> Int
+countValid towels = sum . map (fromEnum . checkPattern towels)
 
 countPattern :: Towels -> PatternCounts -> String -> PatternCounts
 countPattern _ counts "" = Map.insert "" 1 counts
@@ -33,6 +35,14 @@ countPattern towels counts pattern = if null remainders then Map.insert pattern 
     count = sum $ map (\rem -> newcounts Map.! rem) remainders
     finalcounts = Map.insert pattern count newcounts
 
+getPatternCounts :: Towels -> [String] -> [Int]
+getPatternCounts towels patterns = map (map_ Map.!) patterns where
+    map_ = foldr (\p cs -> countPattern towels cs p) Map.empty patterns
+
+getTotalCombos :: Towels -> [String] -> Int
+getTotalCombos towels = sum . getPatternCounts towels
+
+
 main :: IO()
 main = do
     handle <- openFile "input.txt" ReadMode
@@ -40,9 +50,5 @@ main = do
     let (t: p) = splitBy "" $ lines contents
     let towels = parseBy (isLetter) (t !! 0)
     let patterns = p !! 0
-
-    print $ sum $ map (fromEnum . checkPattern towels) patterns
-
-    let counts = Map.empty
-    let newcounts = foldr (\p cs -> countPattern towels cs p) counts patterns
-    print $ sum $ map (newcounts Map.!) patterns
+    print $ countValid towels patterns
+    print $ getTotalCombos towels patterns
