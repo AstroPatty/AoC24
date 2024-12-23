@@ -20,6 +20,7 @@ cabal.sandbox.config
 *.prof
 *.aux
 *.hp
+*.py
 *.eventlog
 .stack-work/
 cabal.project.local
