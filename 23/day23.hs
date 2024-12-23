@@ -1,46 +1,24 @@
 import Control.Applicative (liftA2)
-import Control.Monad.State
 import Data.List
 import Data.Map qualified as Map
 import Data.Maybe
-import Data.Sequence qualified as Seq
 import Data.Set qualified as Set
-import Debug.Trace
 import Parser
 import System.IO
 
-type SearchQueue = State (Set.Set String, Set.Set String)
-
-push :: String -> SearchQueue ()
-push item = do
-  (toSearch, searched) <- get
-  if Set.member item searched || Set.member item toSearch
-    then return ()
-    else do
-      put (Set.insert item toSearch, searched)
-      return ()
-
-pop :: SearchQueue (Maybe String)
-pop = do
-  (toSearch, searched) <- get
-  if Set.null toSearch
-    then return Nothing
-    else do
-      let val = head $ Set.toList toSearch
-      put (Set.delete val toSearch, Set.insert val searched)
-      return (Just val)
-
 type Graph = Map.Map String (Set.Set String)
 
-getAllVertices :: Graph -> Set.Set String
-getAllVertices = Set.fromList . Map.keys
-
+-- Initialization functions
 buildGraph :: [String] -> Graph
 buildGraph [] = Map.empty
 buildGraph (item : rest) = Map.unionWith Set.union fg $ buildGraph rest
   where
     [n1, n2] = splitBy '-' item
     fg = Map.fromList [(n1, Set.singleton n2), (n2, Set.singleton n1)]
+
+-- Query functions
+getAllVertices :: Graph -> Set.Set String
+getAllVertices = Set.fromList . Map.keys
 
 hasEdge :: String -> String -> Graph -> Bool
 hasEdge n1 n2 graph = fromMaybe False e1has
@@ -57,6 +35,9 @@ getNeighbors = Map.lookup
 
 getCommonNeighbors :: String -> String -> Graph -> Maybe (Set.Set String)
 getCommonNeighbors s1 s2 graph = liftA2 Set.intersection (getNeighbors s1 graph) (getNeighbors s2 graph)
+
+countTrianglesWith :: Graph -> Char -> Int
+countTrianglesWith g c = Set.size $ Set.filter (hasStart c) $ getAllTriangles g
 
 getTriangles :: String -> String -> Graph -> Set.Set (Set.Set String)
 getTriangles s1 s2 graph = fromMaybe Set.empty tris
@@ -98,14 +79,14 @@ getMaximalClique graph = cliques !! idx
     sizes = map Set.size cliques
     idx = fromJust $ elemIndex (maximum sizes) sizes
 
-getPassword graph = intercalate "," $ sort $ Set.toList $ getMaximalClique graph
+getPassword graph = intercalate "," $ Set.toList $ getMaximalClique graph
 
 main = do
   handle <- openFile "input.txt" ReadMode
   contents <- hGetContents handle
   let connections = lines contents
   let g = buildGraph connections
-  let ntriangles = Set.size $ Set.filter (hasStart 't') $ getAllTriangles g
+  let ntriangles = countTrianglesWith g 't'
   let password = getPassword g
   print ntriangles
   print password
